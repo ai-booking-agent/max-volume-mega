@@ -58,6 +58,47 @@ send — screenshot copied to your clipboard, channel opened — and you press C
    needs to be installed at that time (the AppleScript `activate` call will launch it if it's not
    already running).
 
+## Running on another computer
+
+This only works on **macOS** — it leans on AppleScript for Spotify control, `osascript` for the
+clipboard/notifications, and `launchd` for scheduling, none of which exist on Windows/Linux.
+
+After cloning the repo onto another Mac:
+
+1. **Install dependencies** (same as the original setup):
+   ```
+   cd /path/to/cloned/max-volume-mega
+   python3 -m venv .venv && source .venv/bin/activate
+   pip install -r requirements.txt
+   playwright install chromium
+   ```
+
+2. **Copy `.env` over from your original machine.** It's gitignored on purpose (it holds your
+   permanent WhatsApp token and other config), so `git clone` did *not* bring it along. AirDrop or
+   `scp` the file directly rather than emailing/pasting it anywhere. Without it, nothing will have
+   your Discord channel, WhatsApp credentials, etc.
+
+3. **Re-run the one-time statsforspotify login** on the new machine — the logged-in session lives
+   in `.state/stats_browser_profile/`, a local Chromium profile that's also gitignored and doesn't
+   travel via git:
+   ```
+   python -m scripts.setup_stats_login
+   ```
+
+4. **Make sure Spotify desktop app is installed and logged in** on the new Mac. The first run
+   triggers a macOS Automation permission prompt — approve it.
+
+5. **Test a run**: `python -m src.main`
+
+6. **Schedule it** — only on whichever machine should actually run the daily job:
+   ```
+   python -m scripts.install_scheduler --hour 9 --minute 0
+   ```
+   If you're moving to a new primary machine, unschedule the old one so it doesn't also fire:
+   ```
+   launchctl unload ~/Library/LaunchAgents/com.maxvolumemega.daily.plist
+   ```
+
 ## WhatsApp setup
 
 Uses Meta's official WhatsApp Cloud API (not an unofficial/self-account automation — see
