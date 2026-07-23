@@ -62,10 +62,17 @@ def screenshot_full_page(page, path):
     return path
 
 
+def row_key(row):
+    """Identifies a specific play event (not just a song) so we can tell when
+    it's been pushed off the recent-tracks list by a later play."""
+    return (row["title"], row["artist"], row["time_text"])
+
+
 def check_and_screenshot(screenshot_path):
     """Opens the stats page and checks whether every track currently listed is
     timestamped today (i.e. the whole recent-tracks list has been pushed to
-    today's plays). Returns (done: bool, today_count: int, total_count: int).
+    today's plays). Returns (done, today_count, total_count, row_keys) where
+    row_keys is the set of row_key(row) for every row currently listed.
     """
     with sync_playwright() as p:
         context = open_context(p, headless=True)
@@ -78,6 +85,29 @@ def check_and_screenshot(screenshot_path):
             done = len(rows) > 0 and today_count == len(rows)
             if done:
                 screenshot_full_page(page, screenshot_path)
-            return done, today_count, len(rows)
+            return done, today_count, len(rows), {row_key(r) for r in rows}
+        finally:
+            context.close()
+
+
+def check_full_replacement(previous_keys, screenshot_path):
+    """Opens the stats page and checks whether every row currently listed is a
+    same-day play that wasn't present in `previous_keys` — i.e. every song
+    that was on the page before has since been replaced. Returns
+    (done, current_keys).
+    """
+    with sync_playwright() as p:
+        context = open_context(p, headless=True)
+        try:
+            page = context.new_page()
+            goto_recent(page)
+            rows = extract_recent_tracks(page)
+
+            current_keys = {row_key(r) for r in rows}
+            all_today = len(rows) > 0 and all(r["is_today"] for r in rows)
+            done = all_today and current_keys.isdisjoint(previous_keys)
+            if done:
+                screenshot_full_page(page, screenshot_path)
+            return done, current_keys
         finally:
             context.close()

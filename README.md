@@ -1,11 +1,18 @@
 # Max Volume Mega automation
 
 Plays the [Max Volume Mega](https://open.spotify.com/playlist/1uu3OwGgJO4gfxZzGsXwDf) playlist
-on your local Spotify desktop app, waits until every track on your statsforspotify.com
-recent-tracks page is timestamped today, screenshots that page, sends you that screenshot on
-WhatsApp as a heads-up, then copies it to your clipboard and opens the target Discord channel so
-you can paste and send it yourself. Runs daily, unattended, via launchd — except the final Discord
-send, which stays a manual click.
+on your local Spotify desktop app and watches your statsforspotify.com recent-tracks page in two
+stages:
+
+1. Once every track listed is timestamped today, it screenshots the page, sends that screenshot to
+   you on WhatsApp, then copies it to your clipboard and opens the target Discord channel so you
+   can paste and send it yourself.
+2. It keeps watching, and once every one of those original tracks has been pushed off the list by
+   newer same-day plays (i.e. the whole list has turned over), it screenshots again and sends that
+   second screenshot to you on WhatsApp too.
+
+Runs daily, unattended, via launchd — except the Discord send after stage 1, which stays a manual
+click.
 
 Playback is driven locally via AppleScript against the Spotify desktop app — the same as clicking
 play yourself — so it works on a **free Spotify account** with **no Spotify API credentials at
@@ -74,11 +81,15 @@ above).
    code tries the template first and falls back to a free-form message (which only works within 24h
    of you last texting the bot) if the template isn't approved yet.
 
-## How it decides "done for the day"
+## How it decides "done"
 
-It polls statsforspotify's recent-tracks page every `POLL_INTERVAL_SECONDS` (default 5 min) for
-up to `MAX_POLL_HOURS` (default 8h). It's "done" the moment every track currently listed on that
-page is timestamped today — i.e. the whole recent-tracks list has been pushed to today's plays.
+It polls statsforspotify's recent-tracks page every `POLL_INTERVAL_SECONDS` (default 5 min), each
+stage getting up to `MAX_POLL_HOURS` (default 8h):
+
+- **Stage 1** is done the moment every track currently listed is timestamped today — i.e. the
+  whole recent-tracks list has been pushed to today's plays.
+- **Stage 2** is done once every one of the specific plays present at stage 1 has disappeared from
+  the list (replaced by newer same-day plays) — i.e. the list has fully turned over since then.
 
 ## Logs
 
