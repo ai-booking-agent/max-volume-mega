@@ -2,9 +2,10 @@
 
 Plays the [Max Volume Mega](https://open.spotify.com/playlist/1uu3OwGgJO4gfxZzGsXwDf) playlist
 on your local Spotify desktop app, waits until every track on your statsforspotify.com
-recent-tracks page is timestamped today, screenshots that page, copies it to your clipboard, and
-opens the target Discord channel so you can paste and send it yourself. Runs daily, unattended,
-via launchd — except the final send, which stays a manual click.
+recent-tracks page is timestamped today, screenshots that page, sends you that screenshot on
+WhatsApp as a heads-up, then copies it to your clipboard and opens the target Discord channel so
+you can paste and send it yourself. Runs daily, unattended, via launchd — except the final Discord
+send, which stays a manual click.
 
 Playback is driven locally via AppleScript against the Spotify desktop app — the same as clicking
 play yourself — so it works on a **free Spotify account** with **no Spotify API credentials at
@@ -26,7 +27,7 @@ send — screenshot copied to your clipboard, channel opened — and you press C
    ```
 
 2. **Fill in `.env`** (copy from `.env.example`) — the default `DISCORD_CHANNEL_URL` already
-   points at your target channel, so this step is optional unless you want to change it.
+   points at your target channel. For WhatsApp, see the dedicated section below.
 
 3. **Log in to statsforspotify.com** (opens a real browser window once, session persists after):
    ```
@@ -49,6 +50,29 @@ send — screenshot copied to your clipboard, channel opened — and you press C
    Installs a launchd agent that fires once a day. Your Mac needs to be awake and the Spotify app
    needs to be installed at that time (the AppleScript `activate` call will launch it if it's not
    already running).
+
+## WhatsApp setup
+
+Uses Meta's official WhatsApp Cloud API (not an unofficial/self-account automation — see
+`src/whatsapp_notify.py` for why that route was avoided, same reasoning as the Discord section
+above).
+
+1. Create an app at [developers.facebook.com/apps](https://developers.facebook.com/apps) → type
+   **Business** → add the **WhatsApp** product.
+2. On **WhatsApp → API Setup**, copy the **Phone number ID**, add your own number under **To** and
+   verify it, and send any WhatsApp message from your phone to that test number.
+3. In [Business Settings → System Users](https://business.facebook.com/settings/system-users),
+   create a System User (Admin), assign it the app *and* the WhatsApp Business Account (Business
+   Settings → Accounts → WhatsApp Accounts) with Full control, then **Generate New Token** with
+   `whatsapp_business_messaging` + `whatsapp_business_management` scopes, expiration **Never**.
+4. Put the token, phone number ID, and your number (digits only, with country code, no `+`) into
+   `.env` as `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_RECIPIENT_NUMBER`.
+5. For the daily job to work without you texting the bot every 24 hours, create an approved
+   message template in [WhatsApp Manager](https://business.facebook.com/wa/manage/message-templates/):
+   name `max_volume_mega_screenshot`, category Utility, language English (US), an **Image** header,
+   and a body with a `{{1}}` variable for the date. Once approved, sends use it automatically — the
+   code tries the template first and falls back to a free-form message (which only works within 24h
+   of you last texting the bot) if the template isn't approved yet.
 
 ## How it decides "done for the day"
 

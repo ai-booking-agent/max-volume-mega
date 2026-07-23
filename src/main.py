@@ -3,7 +3,7 @@ import logging
 import sys
 import time
 
-from . import config, discord_notify, spotify_playback_local, stats_scraper
+from . import config, discord_notify, spotify_playback_local, stats_scraper, whatsapp_notify
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,11 +36,19 @@ def run():
 
         log.info("%d/%d recent tracks are from today", today_count, total_count)
         if done:
-            log.info("Recent-tracks page is full of today's plays. Prepping for Discord...")
-            discord_notify.prepare_manual_send(
-                screenshot_path,
-                f"🎵 Max Volume Mega — recent tracks all from today ({today})",
-            )
+            log.info("Recent-tracks page is full of today's plays.")
+            caption = f"🎵 Max Volume Mega — recent tracks all from today ({today})"
+            date_text = datetime.date.today().strftime("%m/%d/%Y")
+
+            try:
+                log.info("Sending WhatsApp heads-up...")
+                whatsapp_notify.send_screenshot(screenshot_path, date_text, caption)
+                log.info("WhatsApp message sent.")
+            except Exception:
+                log.exception("Failed to send WhatsApp message, continuing to Discord prep")
+
+            log.info("Prepping for Discord...")
+            discord_notify.prepare_manual_send(screenshot_path, caption)
             log.info("Screenshot copied to clipboard and Discord channel opened. Done.")
             return
 

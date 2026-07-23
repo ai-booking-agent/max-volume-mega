@@ -31,3 +31,9 @@ MAX_POLL_HOURS = float(os.environ.get("MAX_POLL_HOURS", "8"))
 STATS_BROWSER_PROFILE_DIR = STATE_DIR / "stats_browser_profile"
 SCREENSHOT_DIR = STATE_DIR / "screenshots"
 SCREENSHOT_DIR.mkdir(exist_ok=True)
+
+# WhatsApp Cloud API (official Meta API) — sends a heads-up with the screenshot
+# before you post it to Discord. See src/whatsapp_notify.py.
+WHATSAPP_ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN", "")
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "")
+WHATSAPP_RECIPIENT_NUMBER = os.environ.get("WHATSAPP_RECIPIENT_NUMBER", "")
