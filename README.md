@@ -117,10 +117,17 @@ above).
    `.env` as `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_RECIPIENT_NUMBER`.
 5. For the daily job to work without you texting the bot every 24 hours, create an approved
    message template in [WhatsApp Manager](https://business.facebook.com/wa/manage/message-templates/):
-   name `max_volume_mega_screenshot`, category Utility, language English (US), an **Image** header,
-   and a body with a `{{1}}` variable for the date. Once approved, sends use it automatically — the
-   code tries the template first and falls back to a free-form message (which only works within 24h
-   of you last texting the bot) if the template isn't approved yet.
+   name matching `TEMPLATE_NAME` in `src/whatsapp_notify.py` (currently
+   `max_volume_mega_screenshot_v3`), category **Utility**, language English (US), an **Image**
+   header, and a body with a `{{1}}` variable for the date. Once approved, sends use it
+   automatically — the code tries the template first and falls back to a free-form message (which
+   only works within 24h of you last texting the bot) if the template isn't approved yet.
+
+   Watch out for Meta's category classifier: promotional-sounding wording (emoji, product-name-led
+   phrasing) gets auto-flagged as Marketing even if you pick Utility, and Marketing-category
+   templates get silently paced/delayed by WhatsApp's spam-prevention system — that's what
+   happened to the first version of this template. Keep the body phrased like a plain status
+   update (e.g. "Your requested recent-tracks screenshot from {{1}} is ready.") to pass as Utility.
 
 ## How it decides "done"
 

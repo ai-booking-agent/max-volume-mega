@@ -5,7 +5,7 @@ from . import config
 API_VERSION = "v21.0"
 API_BASE = f"https://graph.facebook.com/{API_VERSION}"
 
-TEMPLATE_NAME = "max_volume_mega_screenshot"
+TEMPLATE_NAME = "max_volume_mega_screenshot_v3"
 TEMPLATE_LANGUAGE = "en_US"
 
 
