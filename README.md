@@ -118,10 +118,12 @@ above).
 5. For the daily job to work without you texting the bot every 24 hours, create an approved
    message template in [WhatsApp Manager](https://business.facebook.com/wa/manage/message-templates/):
    name matching `TEMPLATE_NAME` in `src/whatsapp_notify.py` (currently
-   `max_volume_mega_screenshot_v3`), category **Utility**, language English (US), an **Image**
-   header, and a body with a `{{1}}` variable for the date. Once approved, sends use it
-   automatically — the code tries the template first and falls back to a free-form message (which
-   only works within 24h of you last texting the bot) if the template isn't approved yet.
+   `max_volume_mega_screenshot_v3`), language matching `TEMPLATE_LANGUAGE` (currently `en`, i.e.
+   plain "English" — **not** "English (US)"/`en_US`, which is a different language code and will
+   fail to match), category **Utility**, an **Image** header, and a body with a `{{1}}` variable
+   for the date. Once approved, sends use it automatically — the code tries the template first and
+   falls back to a free-form message (which only works within 24h of you last texting the bot) if
+   the template isn't approved yet.
 
    Watch out for Meta's category classifier: promotional-sounding wording (emoji, product-name-led
    phrasing) gets auto-flagged as Marketing even if you pick Utility, and Marketing-category
